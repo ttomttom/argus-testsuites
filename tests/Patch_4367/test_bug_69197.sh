@@ -6,36 +6,30 @@ policyfile=policyfile.txt
 obligationfile=obligationfile.txt
 
 ## This is the needed bit to make EGEE/EMI compatible tests
-if [ -z $T_PAP_HOME ]
-then
-if [ -d /usr/share/argus/pap ]
-then
-T_PAP_HOME=/usr/share/argus/pap
-else
-if [ -d /opt/argus/pap ]
-then
-T_PAP_HOME=/opt/argus/pap
-else
-echo "T_PAP_HOME not set, not found at standard locations. Exiting."
-exit 2;
-fi
-fi
+if [ -z $T_PAP_HOME ]; then
+	if [ -d /usr/share/argus/pap ]; then
+		T_PAP_HOME=/usr/share/argus/pap
+	else
+		if [ -d /opt/argus/pap ]; then
+			T_PAP_HOME=/opt/argus/pap
+		else
+			echo "T_PAP_HOME not set, not found at standard locations. Exiting."
+			exit 2;
+		fi
+	fi
 fi
 
-if [ -z $T_PEP_HOME ]
-then
-if [ -d /usr/share/argus/pepd ]
-then
-T_PEP_HOME=/usr/share/argus/pepd
-else
-if [ -d /opt/argus/pepd ]
-then
-T_PEP_HOME=/opt/argus/pepd
-else
-echo "T_PEP_HOME not set, not found at standard locations. Exiting."
-exit 2;
-fi
-fi
+if [ -z $T_PEP_HOME ]; then
+	if [ -d /usr/share/argus/pepd ]; then
+		T_PEP_HOME=/usr/share/argus/pepd
+	else
+		if [ -d /opt/argus/pepd ]; then
+			T_PEP_HOME=/opt/argus/pepd
+		else
+			echo "T_PEP_HOME not set, not found at standard locations. Exiting."
+			exit 2;
+		fi
+	fi
 fi
 
 
@@ -47,14 +41,14 @@ if [ -f /etc/rc.d/init.d/pdp ];then T_PDP_CTRL=pdp;fi
 echo "T_PDP_CTRL set to: /etc/rc.d/init.d/$T_PDP_CTRL"
 T_PAP_CTRL=argus-pap
 if [ -f /etc/rc.d/init.d/pap-standalone ];then
-T_PAP_CTRL=pap-standalone
+	T_PAP_CTRL=pap-standalone
 fi
 echo "T_PAP_CTRL set to: /etc/rc.d/init.d/$T_PAP_CTRL"
 /etc/rc.d/init.d/$T_PAP_CTRL status | grep -q 'PAP running'
 if [ $? -ne 0 ]; then
-echo "PAP is not running"
-/etc/rc.d/init.d/$T_PAP_CTRL start
-sleep 10
+	echo "PAP is not running"
+	/etc/rc.d/init.d/$T_PAP_CTRL start
+	sleep 10
 fi
 
 PEPCLI=pepcli
@@ -66,47 +60,26 @@ pep_config_saved="/tmp/pepd.ini.saved"
 
 ## To here for EGEE/EMI compatible tests
 
-is_proxy=""
-is_proxy="yes"
-
-if [ $is_proxy ]
-then
-USERCERT=~/user_certificates/test_user_1_cert.pem
-USERKEY=~/user_certificates/test_user_1_key.pem
-USERPWD=`cat ~/user_certificates/password`
-else
-USERCERT=/etc/grid-security/hostcert.pem
-USERKEY=/etc/grid-security/hostkey.pem
+if [ ! -d /etc/vomses ]; then
+	mkdir -p /etc/vomses
 fi
 
-if [ ! -d /etc/vomses ]
-then
-mkdir -p /etc/vomses
-fi
-
-if [ ! -f /etc/vomses/dteam-voms.cern.ch ]
-then
-echo \
-'"dteam" "voms.hellasgrid.gr" "15004" "/C=GR/O=HellasGrid/OU=hellasgrid.gr/CN=voms.hellasgrid.gr" "dteam"'\
-> /etc/vomses/dteam-voms.cern.ch
+if [ ! -f /etc/vomses/${VO} ]; then
+	echo "${VOMSES_STRING}" > /etc/vomses/${VO}
 fi
 
 USERPROXY=/tmp/x509up_u0
 rm $USERPROXY
 
-if [ ! -f $USERPROXY ]
-then
-export PATH=$PATH:/opt/glite/bin/
-export LD_LIBRARY_PATH=/opt/glite/lib64
-voms-proxy-init -voms dteam \
--cert $USERCERT \
--key $USERKEY \
--pwstdin < ~/user_certificates/password
-CMD="voms-proxy-info -fqan"; echo $CMD; $CMD
+if [ ! -f $USERPROXY ]; then
+	export PATH=$PATH:/opt/glite/bin/
+	export LD_LIBRARY_PATH=/opt/glite/lib64
+	voms-proxy-init -voms "${VO}" \
+			-cert $USERCERT \
+			-key $USERKEY \
+			-pwstdin < ~/user_certificates/password
+	CMD="voms-proxy-info -fqan"; echo $CMD; $CMD
 fi
-
-# USERCERT=$HOME/user_certificates/test_user_0_cert.pem
-# USERKEY=$HOME/user_certificates/test_user_0_key.pem
 
 X509_USER_CERT=$USERCERT
 X509_USER_KEY=$USERKEY
@@ -138,16 +111,16 @@ rm /etc/grid-security/gridmapdir/*`hostname`*
 function pep_start {
 /etc/rc.d/init.d/$T_PEP_CTRL status > /dev/null
 if [ $? -ne 0 ]; then
-  echo "PEPd is not running. Starting one."
-  /etc/rc.d/init.d/$T_PEP_CTRL start
-  sleep 10
+	echo "PEPd is not running. Starting one."
+	/etc/rc.d/init.d/$T_PEP_CTRL start
+	sleep 10
 else
-  echo "${script_name}: Stopping PEPd."
-  /etc/rc.d/init.d/$T_PEP_CTRL stop > /dev/null
-  sleep 6
-  echo "${script_name}: Starting PEPd."
-  /etc/rc.d/init.d/$T_PEP_CTRL start > /dev/null
-  sleep 10
+	echo "${script_name}: Stopping PEPd."
+	/etc/rc.d/init.d/$T_PEP_CTRL stop > /dev/null
+	sleep 6
+	echo "${script_name}: Starting PEPd."
+	/etc/rc.d/init.d/$T_PEP_CTRL start > /dev/null
+	sleep 10
 fi
 }
 
@@ -156,9 +129,9 @@ pep_start
 function pdp_start {
 /etc/rc.d/init.d/$T_PDP_CTRL status > /dev/null
 if [ $? -ne 0 ]; then
-  echo "PDP is not running. Starting one."
-  /etc/rc.d/init.d/$T_PDP_CTRL start
-  sleep 10
+	echo "PDP is not running. Starting one."
+	/etc/rc.d/init.d/$T_PDP_CTRL start
+	sleep 10
 fi
 }
 
@@ -169,9 +142,9 @@ pdp_start
 function pap_start {
 /etc/rc.d/init.d/$T_PAP_CTRL status | grep -q 'PAP running'
 if [ $? -ne 0 ]; then
-  echo "PAP is not running"
-  /etc/rc.d/init.d/$T_PAP_CTRL start;
-  sleep 10;
+	echo "PAP is not running"
+	/etc/rc.d/init.d/$T_PAP_CTRL start;
+	sleep 10;
 fi 
 }
 
@@ -180,9 +153,9 @@ pap_start
 # Remove all policies defined for the default pap
 $T_PAP_HOME/bin/pap-admin rap
 if [ $? -ne 0 ]; then
-  echo "Error cleaning the default pap"
-  echo "Failed command: $T_PAP_HOME/bin/pap-admin rap"
-  exit 1
+	echo "Error cleaning the default pap"
+	echo "Failed command: $T_PAP_HOME/bin/pap-admin rap"
+	exit 1
 fi
 
 RESOURCE="resource_1"
@@ -216,7 +189,7 @@ $PEPCLI $OPTS -p https://`hostname`:8154/authz \
        --key $USERKEY \
        --cert $USERCERT \
        -r "resource_1" \
-       --keypasswd $USERPWD \
+       --keypasswd "$USERPWD" \
        -a "testwerfer" > /tmp/${script_name}.out
 result=$?; echo $result
 #
@@ -277,27 +250,24 @@ fi
 # 
 target_file=/etc/grid-security/voms-grid-mapfile
 grep -q '# Ignore' ${target_file}
-if [ $? -ne 0 ]
-then
-    echo \"${xxx_tmp}\" .dteam >>${target_file} #"
+if [ $? -ne 0 ]; then
+    echo \"${xxx_tmp}\" ".${VO}" >>${target_file} #"
 else
     sed -i 's/# Ignore/'${searchstring}'/g' ${target_file};# echo $?
 fi
 
 target_file=/etc/grid-security/grid-mapfile
 grep -q '# Ignore' ${target_file}
-if [ $? -ne 0 ]
-then
-    echo \"${xxx_tmp}\" .dteam >>${target_file} #"
+if [ $? -ne 0 ]; then
+    echo \"${xxx_tmp}\" ".${VO}" >>${target_file} #"
 else
     sed -i 's/# Ignore/'${searchstring}'/g' ${target_file};# echo $?
 fi
 
 target_file=/etc/grid-security/groupmapfile
 grep -q '# Ignore' ${target_file}
-if [ $? -ne 0 ]
-then
-    echo \"${xxx_tmp}\" dteam >>${target_file} #"
+if [ $? -ne 0 ]; then
+    echo \"${xxx_tmp}\" ".${VO}" >>${target_file} #"
 else
     sed -i 's/# Ignore/'${searchstring}'/g' ${target_file};# echo $?
 fi
@@ -338,7 +308,7 @@ $PEPCLI $OPTS -p https://`hostname`:8154/authz \
        --key $USERKEY \
        --cert $USERCERT \
        -r "resource_1" \
-       --keypasswd $USERPWD \
+       --keypasswd "$USERPWD" \
        -a "testwerfer" > /tmp/${script_name}.out
 result=$?; echo $result
 

@@ -43,7 +43,7 @@ $PEPCLI -p https://`hostname`:8154/authz \
        -k /etc/grid-security/hostcert.pem \
        -r "resource_1" \
        -a "testwerfer" \
-       -f "/dteam" > $LOGSLOCATION/${script_name}.out
+       -f "/${VO}" > $LOGSLOCATION/${script_name}.out
 result=$?
 
 if [ $result -eq 0 ]

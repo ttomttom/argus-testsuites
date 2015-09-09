@@ -11,19 +11,12 @@ pep_config_saved="/tmp/pepd.ini.saved"
 
 ## To here for EGEE/EMI compatible tests
 
-
-USERCERT=~/user_certificates/test_user_1_cert.pem
-USERKEY=~/user_certificates/test_user_1_key.pem
-USERPWD=`cat ~/user_certificates/password`
-
 if [ ! -d /etc/vomses ]; then
     mkdir -p /etc/vomses
 fi
 
-if [ ! -f /etc/vomses/dteam-voms.cern.ch ]; then
-    echo \
-    '"dteam" "voms.hellasgrid.gr" "15004" "/C=GR/O=HellasGrid/OU=hellasgrid.gr/CN=voms.hellasgrid.gr" "dteam"'\
-    > /etc/vomses/dteam-voms.cern.ch
+if [ ! -f /etc/vomses/${VO} ]; then
+    echo ${VOMSES_STRING} > /etc/vomses/${VO}
 fi
 
 USERPROXY=/tmp/x509up_u0
@@ -32,16 +25,16 @@ rm $USERPROXY
 if [ ! -f $USERPROXY ]; then
     export PATH=$PATH:/opt/glite/bin/
     export LD_LIBRARY_PATH=/opt/glite/lib64
-    voms-proxy-init -voms dteam \
+    voms-proxy-init -voms "${VO}" \
     -cert $USERCERT \
     -key $USERKEY \
     -pwstdin < ~/user_certificates/password
     CMD="voms-proxy-info -fqan"; echo $CMD; $CMD
-    if [ $? -eq 0 ]; then
-        USERCERT=$USERPROXY
-    else
-        echo "Error setting the Usercert to $USERPROXY"
-    fi
+    #if [ $? -eq 0 ]; then
+    #    USERCERT=$USERPROXY
+    #else
+    #    echo "Error setting the Usercert to $USERPROXY"
+    #fi
 fi
 
 echo "Running: ${script_name}"
@@ -83,20 +76,19 @@ cp ${source_dir}/${target_file} ${target_dir}/${target_file}.${script_name}
 
 # Now enter the userids etc
 # /etc/grid-security/grid-mapfile
-# "/dteam" .dteam
+# "/${VO}" .${VO}
 # <DN> <user id>
 
 target_file=/etc/grid-security/grid-mapfile
-DTEAM=".dteam"
 DN_UID="glite"
-echo \"/dteam\" ${DTEAM} > ${target_file}
-echo \"${obligation_dn}\" ${DN_UID} >> ${target_file} #"
+echo "\"${VO_PRIMARY_GROUP}\"" ".${VO}" > ${target_file}
+echo \"${obligation_dn}\" ${DN_UID} >> ${target_file} 
 echo ${target_file};cat ${target_file}
 
 target_file=/etc/grid-security/groupmapfile
-DTEAM="dteam"
+GROUP="${VO}"
 DN_UID_GROUP="testing"
-echo \"/dteam\" ${DTEAM} > ${target_file} #"
+echo "\"${VO_PRIMARY_GROUP}\"" ${GROUP} > ${target_file}
 echo ${target_file};cat ${target_file}
 
 # Now sort out the pepd.ini file

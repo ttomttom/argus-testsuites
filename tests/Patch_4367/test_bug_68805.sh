@@ -9,7 +9,7 @@ source $FRAMEWORK/set_homes.sh
 source $FRAMEWORK/start_services.sh
 
 
-USERCERT=/etc/grid-security/hostcert.pem
+HOSTCERT=/etc/grid-security/hostcert.pem
 
 echo "Running: ${script_name}"
 echo `date`
@@ -17,7 +17,7 @@ echo `date`
 # Get my cert DN for usage later
 
 declare subj_string;
-foo=`openssl x509 -in $USERCERT -subject -noout`;
+foo=`openssl x509 -in $HOSTCERT -subject -noout`;
 IFS=" "
 subj_string=( $foo )
 

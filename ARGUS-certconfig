@@ -43,3 +43,14 @@ export Patch4367="yes"
 export Task18586="yes"
 export Task20989="yes"
 export Task21931="yes"
+
+# Test specific configurations
+export USERCERT=~/user_certificates/test_user_1_cert.pem
+export USERKEY=~/user_certificates/test_user_1_key.pem
+export USERPWD="`cat ~/user_certificates/password`"
+
+export VO="dteam"
+export VO_PRIMARY_GROUP="/dteam"
+export VO_SECONDARY_GROUP="/dteam/NGI_CH"
+export VOMSES_STRING='"dteam" "voms.hellasgrid.gr" "15004" "/C=GR/O=HellasGrid/OU=hellasgrid.gr/CN=voms.hellasgrid.gr" "dteam"'
+

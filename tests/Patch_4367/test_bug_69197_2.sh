@@ -18,7 +18,7 @@ $PEPCLI $OPTS -p https://`hostname`:8154/authz \
        --key $USERKEY \
        --cert $USERCERT \
        -r "resource_1" \
-       --keypasswd $USERPWD \
+       --keypasswd "$USERPWD" \
        -a "testwerfer" > /tmp/${script_name}.out
 result=$?; # echo $result
 
@@ -87,7 +87,7 @@ $PEPCLI $OPTS -p https://`hostname`:8154/authz \
        --key $USERKEY \
        --cert $USERCERT \
        -r "resource_1" \
-       --keypasswd $USERPWD \
+       --keypasswd "$USERPWD" \
        -a "testwerfer" > /tmp/${script_name}.out
 result=$?; # echo $result
 
@@ -97,9 +97,9 @@ echo "---------------------------------------"
 
 #
 # looking for
-# Username: dteamXXX
+# Username: ${VO}XXX
 # Group: testing
-# Secondary Groups: testing dteam
+# Secondary Groups: testing ${VO}
 #
 if [ $result -eq 0 ]
 then
@@ -109,7 +109,7 @@ then
         echo "${script_name}: Did not find expected rule: $RULE."
         failed="yes"
     else
-        WANTED_UID="dteam"
+        WANTED_UID="${VO}"
         grep_term="Username: "
         foo=`grep $grep_term /tmp/${script_name}.out`
         search_term=${foo#$grep_term};
@@ -127,7 +127,7 @@ then
             failed="yes"
         fi
 #
-# Secondary groups (will be either dteam or $DN_UID_GROUP
+# Secondary groups (will be either ${VO} or $DN_UID_GROUP
 #
         grep_term="Secondary "
         foo=`grep $grep_term /tmp/${script_name}.out`;
@@ -137,12 +137,12 @@ then
         i=0
         while [ ! -z ${groups[$i]} ]
         do
-            if [ "${groups[$i]}" != "dteam" ]
+            if [ "${groups[$i]}" != "${VO}" ]
             then 
                 if [ "${groups[$i]}" != "$DN_UID_GROUP" ]
                 then
                     echo "${script_name}: Secondary groups $search_term found."
-                    echo "${script_name}: Expecting dteam and ${DN_UID_GROUP}."
+                    echo "${script_name}: Expecting ${VO} and ${DN_UID_GROUP}."
                     failed="yes"
                 fi
             fi

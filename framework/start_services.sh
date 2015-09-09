@@ -34,10 +34,13 @@ sleep 2
 # Start the services
 echo "Start PAP..."
 $T_PAP_CTRL start 
+sleep 10
 echo "Start PDP..."
 $T_PDP_CTRL start
+sleep 5
 echo "Start PEP Server..."
 $T_PEP_CTRL start
+sleep 5
 
 # Bridge a possible startup delay (e.g. to open up ports)
 sleep 10

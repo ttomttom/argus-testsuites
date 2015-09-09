@@ -40,21 +40,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-is_proxy=""
-is_proxy="yes"
-
-if [ $is_proxy ]
-then
-USERCERT=~/user_certificates/test_user_1_cert.pem
-USERKEY=~/user_certificates/test_user_1_key.pem
-USERPWD=`cat ~/user_certificates/password`
-else
-USERCERT=/etc/grid-security/hostcert.pem
-USERKEY=/etc/grid-security/hostkey.pem
-fi
-
-
-# Get my cert DN for usage later
 foo=`openssl x509 -in $USERCERT -subject -noout`
 obligation_dn=`echo $foo | sed 's/subject= //'`
 echo " subject string = $obligation_dn"

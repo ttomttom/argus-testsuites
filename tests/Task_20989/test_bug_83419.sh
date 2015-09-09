@@ -11,23 +11,11 @@ source $FRAMEWORK/start_services.sh
 #########################################################
 # Prepare the environment (conf-files, e.t.c) for the TEST
 #
-is_proxy=”yes”
-
-if [ $is_proxy ]; then
-	USERCERT=~/user_certificates/test_user_1_cert.pem
-	USERKEY=~/user_certificates/test_user_1_key.pem
-	USERPWD=`cat ~/user_certificates/password`
-else
-	USERCERT=/etc/grid-security/hostcert.pem
-	USERKEY=/etc/grid-security/hostkey.pem
-fi
 
 if [ ! -d /etc/vomses ]; then
 	mkdir -p /etc/vomses
-	if [ ! -f /etc/vomses/dteam-voms.cern.ch ]; then
-		echo \
-		‘“dteam” “voms.hellasgrid.gr” “15004” “/C=GR/O=HellasGrid/OU=hellasgrid.gr/CN=voms.hellasgrid.gr” “dteam”’\
-		> /etc/vomses/dteam-voms.cern.ch
+	if [ ! -f /etc/vomses/${VO} ]; then
+		echo ${VOMSES_STRING} > /etc/vomses/${VO}
 	fi
 
 fi
@@ -36,7 +24,7 @@ USERPROXY=/tmp/x509up_u0
 rm $USERPROXY
 
 if [ ! -f $USERPROXY ]; then
-	voms-proxy-init -voms dteam \
+	voms-proxy-init -voms "${VO}" \
 	-cert $USERCERT \
 	-key $USERKEY \
 	-pwstdin < ~/user_certificates/password
@@ -58,25 +46,24 @@ mkdir -p ${target_dir}/${target_file_dir}
 
 # Now enter the userids etc
 # /etc/grid-security/grid-mapfile
-# “/dteam” .dteam
+# “/${VO}” .${VO}
 # <DN> <user id>
 target_file=/etc/grid-security/grid-mapfile
-DTEAM=.dteam
-echo '"/dteam"' $DTEAM > ${target_file}
-echo '"/dteam/Role=NULL/Capability=NULL"' $DTEAM > ${target_file}
+echo "\"${VO_PRIMARY_GROUP}\"" ".${VO}" > ${target_file}
+echo "\"${VO_PRIMARY_GROUP}/Role=NULL/Capability=NULL\"" ".${VO}" > ${target_file}
 echo ${target_file};cat ${target_file}
 
 target_file=/etc/grid-security/groupmapfile
-DTEAM=group
-GROUP2=group2
-echo '"/dteam"' $DTEAM > ${target_file}
-echo '"/dteam/Role=NULL/Capability=NULL"' $DTEAM > ${target_file}
-echo '"/dteam/NGI_CH/Role=NULL/Capability=NULL"' $GROUP2 >> ${target_file}
+GROUP1="group"
+GROUP2="group2"
+echo "\"${VO_PRIMARY_GROUP}\"" $GROUP1 > ${target_file}
+echo "\"${VO_PRIMARY_GROUP}/Role=NULL/Capability=NULL\"" $GROUP1 > ${target_file}
+echo "\"${VO_SECONDARY_GROUP}/Role=NULL/Capability=NULL\"" $GROUP2 >> ${target_file}
 echo ${target_file};cat ${target_file}
 
 # make sure that there is a reference to the glite pool-accounts in the gridmapdir
-touch /etc/grid-security/gridmapdir/dteam001
-touch /etc/grid-security/gridmapdir/dteam002
+touch "/etc/grid-security/gridmapdir/${VO}001"
+touch "/etc/grid-security/gridmapdir/${VO}002"
 
 
 #########################################################
@@ -167,7 +154,7 @@ pepcli --pepd https://`hostname`:8154/authz \
        --key $USERKEY \
        --cert $USERCERT \
        --resource $RESOURCE \
-       --keypasswd $USERPWD \
+       --keypasswd "$USERPWD" \
        --action $ACTION > /dev/null
        
 ls  /etc/grid-security/gridmapdir/ | grep $DTEAM

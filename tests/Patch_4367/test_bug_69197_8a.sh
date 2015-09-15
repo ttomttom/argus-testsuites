@@ -43,7 +43,7 @@ if [ $result -eq 0 ]; then
     else
         grep_term="Username: "
         foo=`grep $grep_term /tmp/${script_name}.out`
-	    search_term=${foo};
+	    search_term=${foo#$grep_term};
         if [ "${search_term}" != "${DN_UID}" ]; then
             echo "${script_name}: Did not find expected uid: ${DN_UID}."
             failed="yes"

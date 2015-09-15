@@ -41,38 +41,37 @@ echo "---------------------------------------"
 # 
 if [ $result -eq 0 ]
 then
-if [ $T_PAP_CTRL = argus-pap ]
-then
-grep -qi "Indeterminate" /tmp/${script_name}.out;
-if [ $? -ne 0 ]
-then
-echo "${script_name}: Did not find expected rule: Indeterminate."
-failed="yes"
+    if [ -n "`echo "$T_PAP_CTRL" | grep argus-pap`" ]
+    then
+        grep -qi "Indeterminate" /tmp/${script_name}.out;
+        if [ $? -ne 0 ]
+        then
+            echo "${script_name}: Did not find expected rule: Indeterminate."
+            failed="yes"
+        fi
+        grep_term="Failed to map subject "
+        grep "Failed to map subject " /tmp/${script_name}.out; result=$?
+        if [ $result -ne 0  ]
+        then
+            echo "${script_name}: Did not find expected \"$grep_term\" " 
+            failed="yes"
+        fi
+    else
+        grep -qi "Deny" /tmp/${script_name}.out;
+        if [ $? -ne 0 ]
+        then
+            echo "${script_name}: Did not find expected rule: Deny."
+            failed="yes"
+        fi
+        grep_term="Failed to map subject "
+        grep "Failed to map subject " /tmp/${script_name}.out; result=$?
+        if [ $result -ne 0  ]
+        then
+            echo "${script_name}: Did not find expected \"$grep_term\" " 
+            failed="yes"
+        fi
+    fi
 fi
-grep_term="Failed to map subject "
-grep "Failed to map subject " /tmp/${script_name}.out; result=$?
-if [ $result -ne 0  ]
-then
-echo "${script_name}: Did not find expected \"$grep_term\" " 
-failed="yes"
-fi
-else
-grep -qi "Deny" /tmp/${script_name}.out;
-if [ $? -ne 0 ]
-then
-echo "${script_name}: Did not find expected rule: Deny."
-failed="yes"
-fi
-grep_term="Failed to map subject "
-grep "Failed to map subject " /tmp/${script_name}.out; result=$?
-if [ $result -ne 0  ]
-then
-echo "${script_name}: Did not find expected \"$grep_term\" " 
-failed="yes"
-fi
-fi
-fi
-
 #
 # OK. Now we gotta test with a proxy!
 #

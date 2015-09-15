@@ -44,7 +44,7 @@ echo "---------------------------------------"
 # 
 if [ $result -eq 0 ]
 then
-    if [ $T_PAP_CTRL = argus-pap ]
+    if [ -n "`echo "$T_PAP_CTRL" | grep argus-pap`" ]
     then
         grep -qi "Indeterminate" /tmp/${script_name}.out;
         if [ $? -ne 0 ]

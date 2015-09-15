@@ -19,13 +19,15 @@ source $FRAMEWORK/pepcli-env.sh
 export LD_LIBRARY_PATH=/opt/glite/lib64
 OPTS=" -d "
 OPTS=" -v "
-# OPTS=" "
+OPTS=" "
 
 $PEPCLI $OPTS -p https://`hostname`:8154/authz \
-       -c $USERPROXY \
-       --cert $USERCERT --key $USERKEY --keypasswd "test" \
+       -c $USERCERT \
        --capath /etc/grid-security/certificates/ \
+       --key $USERKEY \
+       --cert $USERCERT \
        -r "resource_1" \
+       --keypasswd "$USERPWD" \
        -a "testwerfer" > /tmp/${script_name}.out
 result=$?; # echo $result
 
@@ -42,23 +44,37 @@ echo "---------------------------------------"
 # 
 if [ $result -eq 0 ]
 then
-    grep -qi "deny" /tmp/${script_name}.out;
-    if [ $? -ne 0 ]
+    if [ -n "`echo "$T_PAP_CTRL" | grep argus-pap`" ]
     then
-        echo "${script_name}: Did not find expected rule: $RULE."
-        failed="yes"
-    fi
-    grep_term="Failed to map subject "
-    grep "Failed to map subject " /tmp/${script_name}.out; result=$?
-    if [ $result -ne 0  ]
-    then
-        echo "${script_name}: Did not find expected \"$grep_term\" " 
-        failed="yes"
+        grep -qi "Indeterminate" /tmp/${script_name}.out;
+        if [ $? -ne 0 ]
+        then
+            echo "${script_name}: Did not find expected rule: Indeterminate."
+            failed="yes"
+        fi
+        grep_term="Failed to map subject "
+        grep "Failed to map subject " /tmp/${script_name}.out; result=$?
+        if [ $result -ne 0  ]
+        then
+            echo "${script_name}: Did not find expected \"$grep_term\" " 
+            failed="yes"
+        fi
+    else
+        grep -qi "Deny" /tmp/${script_name}.out;
+        if [ $? -ne 0 ]
+        then
+            echo "${script_name}: Did not find expected rule: Deny."
+            failed="yes"
+        fi
+        grep_term="Failed to map subject "
+        grep "Failed to map subject " /tmp/${script_name}.out; result=$?
+        if [ $result -ne 0  ]
+        then
+            echo "${script_name}: Did not find expected \"$grep_term\" " 
+            failed="yes"
+        fi
     fi
 fi
-
-exit 0;
-
 #
 # OK. Now we gotta test with a proxy!
 #

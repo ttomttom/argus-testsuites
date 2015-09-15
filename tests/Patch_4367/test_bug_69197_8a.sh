@@ -4,6 +4,15 @@
 source $FRAMEWORK/set_homes.sh
 source $FRAMEWORK/start_services.sh
 
+export GRID_MAPFILE_VO_MAP="yes"
+export GRID_MAPFILE_DN_MAP="yes"
+export GROUP_MAPFILE_VO_MAP="yes"
+export GROUP_MAPFILE_DN_MAP="no"
+
+export PEPENV_preferDNForLoginName="preferDNForLoginName = false"
+export PEPENV_preferDNForPrimaryGroupName="preferDNForPrimaryGroupName = false"
+export PEPENV_noPrimaryGroupNameIsError="noPrimaryGroupNameIsError = false"
+
 # Set up the environment for the use of pepcli
 source $FRAMEWORK/pepcli-env.sh
 

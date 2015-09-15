@@ -4,6 +4,15 @@
 source $FRAMEWORK/set_homes.sh
 source $FRAMEWORK/start_services.sh
 
+export GRID_MAPFILE_VO_MAP="yes"
+export GRID_MAPFILE_DN_MAP="yes"
+export GROUP_MAPFILE_VO_MAP="yes"
+export GROUP_MAPFILE_DN_MAP="no"
+
+export PEPENV_preferDNForLoginName="preferDNForLoginName = true"
+export PEPENV_preferDNForPrimaryGroupName="preferDNForPrimaryGroupName = true"
+export PEPENV_noPrimaryGroupNameIsError="noPrimaryGroupNameIsError = false"
+
 # Set up the environment for the use of pepcli
 source $FRAMEWORK/pepcli-env.sh
 
@@ -142,7 +151,7 @@ cp ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
 target_file="groupmapfile"
 cp ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
 
-$SCRIPTBACKUPLOCATION/$T_PEP_INI $T_PEP_CONF/$T_PEP_INI
+cp $SCRIPTBACKUPLOCATION/$T_PEP_INI $T_PEP_CONF/$T_PEP_INI
 
 clean_up=0
 # clean_up=1

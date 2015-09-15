@@ -30,11 +30,6 @@ if [ ! -f $USERPROXY ]; then
     -key $USERKEY \
     -pwstdin < ~/user_certificates/password
     CMD="voms-proxy-info -fqan"; echo $CMD; $CMD
-    #if [ $? -eq 0 ]; then
-    #    USERCERT=$USERPROXY
-    #else
-    #    echo "Error setting the Usercert to $USERPROXY"
-    #fi
 fi
 
 echo "Running: ${script_name}"
@@ -57,7 +52,7 @@ echo " subject string = $obligation_dn"
 # Next remove all the "leases" from the /etc/grid-security/gridmapdir/
 # This may not be the best method below... but OK.
 
-rm /etc/grid-security/gridmapdir/*`hostname`* > /dev/null 2>&1
+rm -f /etc/grid-security/gridmapdir/%* > /dev/null 2>&1
 
 # Copy the files:
 # /etc/grid-security/grid-mapfile
@@ -81,14 +76,25 @@ cp ${source_dir}/${target_file} ${target_dir}/${target_file}.${script_name}
 
 target_file=/etc/grid-security/grid-mapfile
 DN_UID="glite"
-echo "\"${VO_PRIMARY_GROUP}\"" ".${VO}" > ${target_file}
-echo \"${obligation_dn}\" ${DN_UID} >> ${target_file} 
+echo "" > ${target_file}
+if [ "${GRID_MAPFILE_VO_MAP}" = "yes" ]; then
+	echo "\"${VO_PRIMARY_GROUP}\"" ".${VO}" >> ${target_file}
+fi
+if [ "${GRID_MAPFILE_DN_MAP}" = "yes" ]; then
+	echo \"${obligation_dn}\" ${DN_UID} >> ${target_file} 
+fi
 echo ${target_file};cat ${target_file}
 
 target_file=/etc/grid-security/groupmapfile
 GROUP="${VO}"
 DN_UID_GROUP="testing"
-echo "\"${VO_PRIMARY_GROUP}\"" ${GROUP} > ${target_file}
+echo "" > ${target_file}
+if [ "${GROUP_MAPFILE_VO_MAP}" = "yes" ]; then
+	echo "\"${VO_PRIMARY_GROUP}\"" ${GROUP} >> ${target_file}
+fi
+if [ "${GROUP_MAPFILE_DN_MAP}" = "yes" ]; then
+	echo "\"${obligation_dn}\"" ${DN_UID_GROUP} >> ${target_file}
+fi
 echo ${target_file};cat ${target_file}
 
 # Now sort out the pepd.ini file
@@ -98,10 +104,13 @@ if [ $? -ne 0 ]; then
     failed="yes"
     exit 1;
 fi
-preferDNForLoginName="preferDNForLoginName = false"
-preferDNForPrimaryGroupName="preferDNForPrimaryGroupName = false"
-noPrimaryGroupNameIsError="noPrimaryGroupNameIsError = true"
+preferDNForLoginName="${PEPENV_preferDNForLoginName}"
+preferDNForPrimaryGroupName="${PEPENV_preferDNForPrimaryGroupName}"
+noPrimaryGroupNameIsError="${PEPENV_noPrimaryGroupNameIsError}"
 
+sed -i '/^preferDNForLoginName.*/d' $T_PEP_CONF/$T_PEP_INI
+sed -i '/^preferDNForPrimaryGroupName.*/d' $T_PEP_CONF/$T_PEP_INI
+sed -i '/^noPrimaryGroupNameIsError.*/d' $T_PEP_CONF/$T_PEP_INI
 echo $preferDNForLoginName      >> $T_PEP_CONF/$T_PEP_INI; echo $preferDNForLoginName
 echo $noPrimaryGroupNameIsError >> $T_PEP_CONF/$T_PEP_INI; echo $noPrimaryGroupNameIsError
 echo $preferDNForPrimaryGroupName >> $T_PEP_CONF/$T_PEP_INI; echo $preferDNForPrimaryGroupName

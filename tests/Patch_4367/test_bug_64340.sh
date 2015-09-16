@@ -13,7 +13,7 @@ echo `date`
 
 # Get my cert DN for usage later
 declare subj_string;
-foo=`openssl x509 -in /etc/grid-security/hostcert.pem -subject  -nameopt RFC2253 -noout`;
+foo=`openssl x509 -in $USERCERT -subject  -nameopt RFC2253 -noout`;
 IFS=" "
 subj_string=( $foo )
 
@@ -38,9 +38,9 @@ $T_PEP_CTRL clearcache
 
 $PEPCLI -p https://`hostname`:8154/authz \
        --capath /etc/grid-security/certificates/ \
-       --key /etc/grid-security/hostkey.pem \
-       --cert /etc/grid-security/hostcert.pem \
-       -k /etc/grid-security/hostcert.pem \
+       --key $USERKEY \
+       --cert $USERCERT \
+       -k $USERCERT \
        -r "resource_1" \
        -a "testwerfer" \
        -f "/${VO}" > $LOGSLOCATION/${script_name}.out
@@ -91,7 +91,7 @@ then
     foo=`grep "Secondary Groups:" $LOGSLOCATION/${script_name}.out`
     IFS=" "
     groups=( $foo )
-    if [ ! -z ${groups[1]} ]
+    if [ ! -z ${groups[2]} ]
     then
         sleep 0;
     else

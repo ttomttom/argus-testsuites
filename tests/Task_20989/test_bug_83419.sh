@@ -157,7 +157,7 @@ pepcli --pepd https://`hostname`:8154/authz \
        --keypasswd "$USERPWD" \
        --action $ACTION > /dev/null
        
-ls  /etc/grid-security/gridmapdir/ | grep $DTEAM
+ls  /etc/grid-security/gridmapdir/ | grep $GROUP1
 
 if [ $? -ne 0 ]; then
 	passed="no";

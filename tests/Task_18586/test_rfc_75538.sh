@@ -62,31 +62,36 @@ echo "---Test: PAP changes bind IP using localhost---"
 echo "1) Testing if port 8150 is listen on hostname"
 netstat -l | grep `hostname`:8150 | grep LISTEN
 if [ $? -eq 0 ]; then
-echo "OK" 
+	echo "OK" 
 else
-echo "Failed"
-passed="no"
+        netstat -l | grep `hostname -s`:8150 | grep LISTEN
+        if [ $? -eq 0 ]; then
+                echo "OK" 
+        else
+                echo "Failed"
+                passed="no"
+        fi
 fi
 echo "-------------------------------"
 
 echo "2) Testing if port 8151 is listen on localhost"
 netstat -l | grep localhost | grep 8151 | grep LISTEN
 if [ $? -eq 0 ]; then
-echo "OK" 
+	echo "OK" 
 else
-echo "Failed"
-passed="no"
+	echo "Failed"
+	passed="no"
 fi
 echo "-------------------------------"
 
 
 
 if [ $passed == "no" ]; then
-echo "---Test: PAP changes bind IP using localhost: TEST FAILED---"
-echo `date`
-exit 1
+	echo "---Test: PAP changes bind IP using localhost: TEST FAILED---"
+	echo `date`
+	exit 1
 else
-echo "---Test: PAP changes bind IP using localhost: TEST PASSED---"
-echo `date`
-exit 0
+	echo "---Test: PAP changes bind IP using localhost: TEST PASSED---"
+	echo `date`
+	exit 0
 fi

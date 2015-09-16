@@ -76,7 +76,7 @@ cp ${source_dir}/${target_file} ${target_dir}/${target_file}.${script_name}
 
 target_file=/etc/grid-security/grid-mapfile
 DN_UID="glite"
-echo "" > ${target_file}
+echo -n "" > ${target_file}
 if [ "${GRID_MAPFILE_VO_MAP}" = "yes" ]; then
 	echo "\"${VO_PRIMARY_GROUP}\"" ".${VO}" >> ${target_file}
 fi
@@ -88,7 +88,7 @@ echo ${target_file};cat ${target_file}
 target_file=/etc/grid-security/groupmapfile
 GROUP="${VO}"
 DN_UID_GROUP="testing"
-echo "" > ${target_file}
+echo -n "" > ${target_file}
 if [ "${GROUP_MAPFILE_VO_MAP}" = "yes" ]; then
 	echo "\"${VO_PRIMARY_GROUP}\"" ${GROUP} >> ${target_file}
 fi

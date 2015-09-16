@@ -58,7 +58,7 @@ GROUP1="group"
 GROUP2="group2"
 echo "\"${VO_PRIMARY_GROUP}\"" $GROUP1 > ${target_file}
 echo "\"${VO_PRIMARY_GROUP}/Role=NULL/Capability=NULL\"" $GROUP1 > ${target_file}
-echo "\"${VO_PRIMARY_GROUP}/Role=NULL/Capability=NULL\"" $GROUP2 >> ${target_file}
+echo "\"${VO_SECONDARY_GROUP}/Role=NULL/Capability=NULL\"" $GROUP2 >> ${target_file}
 echo ${target_file};cat ${target_file}
 
 # make sure that there is a reference to the glite pool-accounts in the gridmapdir

@@ -101,8 +101,8 @@ if [ $result -eq 0 ]; then
 #
         grep_term="Secondary "
         foo=`grep $grep_term /tmp/${script_name}.out`;
-        search_term=${foo} # echo $search_term
-        search_term=${search_term} # echo $search_term
+        search_term=${foo#"Secondary "}; # echo $search_term
+        search_term=${search_term#"Groups: "}; # echo $search_term
         groups=( $search_term )
         i=0
         while [ ! -z ${groups[$i]} ]

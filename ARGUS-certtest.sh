@@ -238,7 +238,7 @@ unset tests_list
 if [ "x${PDP}" = "xyes" ]; then
   pushd ./tests/PDP >> /dev/null
   declare -a tests_list
-  tests_list=("${tests_list[@]}" "test-configuration.sh")
+  tests_list=("${tests_list[@]}" "test-pdp-configuration.sh")
  
   for item in ${tests_list[*]}
   do
@@ -266,7 +266,7 @@ unset tests_list
 if [ "x${PEP}" = "xyes" ]; then
   pushd ./tests/PEP >> /dev/null
   declare -a tests_list
-  tests_list=("${tests_list[@]}" "test-configuration.sh")
+  tests_list=("${tests_list[@]}" "test-pep-configuration.sh")
 
   for item in ${tests_list[*]}
   do

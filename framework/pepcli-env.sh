@@ -23,12 +23,27 @@ USERPROXY=/tmp/x509up_u0
 rm $USERPROXY
 
 if [ ! -f $USERPROXY ]; then
+
     export PATH=$PATH:/opt/glite/bin/
     export LD_LIBRARY_PATH=/opt/glite/lib64
-    voms-proxy-init -voms "${VO}" \
-    -cert $USERCERT \
-    -key $USERKEY \
-    -pwstdin < "${USERPWD_FILE}"
+
+    key_owner="`stat -c '%U' "${USERKEY}"`"
+    user="`id -un`"
+    if [ key_owner != user ]; then
+        TMP_USERKEY=/tmp/tmp-userkey.pem
+        cp --preserve=mode "${USERKEY}" "${TMP_USERKEY}"
+        voms-proxy-init -voms "${VO}" \
+                        -cert $USERCERT \
+                        -key $TMP_USERKEY \
+                        -pwstdin < "${USERPWD_FILE}"
+        rm -f "${TMP_USERKEY}"
+    else
+        voms-proxy-init -voms "${VO}" \
+                        -cert $USERCERT \
+                        -key $USERKEY \
+                        -pwstdin < "${USERPWD_FILE}"
+    fi
+
     CMD="voms-proxy-info -fqan"; echo $CMD; $CMD
 fi
 

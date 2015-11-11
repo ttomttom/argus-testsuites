@@ -8,33 +8,22 @@ policyfile=policyfile.txt
 source $FRAMEWORK/set_homes.sh
 source $FRAMEWORK/start_services.sh
 
+export GRID_MAPFILE_VO_MAP="no"
+export GRID_MAPFILE_DN_MAP="yes"
+export GROUP_MAPFILE_VO_MAP="no"
+export GROUP_MAPFILE_DN_MAP="yes"
+
+export PEPENV_preferDNForLoginName="preferDNForLoginName = true"
+export PEPENV_preferDNForPrimaryGroupName="preferDNForPrimaryGroupName = true"
+export PEPENV_noPrimaryGroupNameIsError="noPrimaryGroupNameIsError = true"
+
+# Set up the environment for the use of pepcli
+source $FRAMEWORK/pepcli-env.sh
+
 echo "Running: ${script_name}"
 echo `date`
 
-# Get my cert DN for usage later
-declare subj_string;
-foo=`openssl x509 -in $USERCERT -subject  -nameopt RFC2253 -noout`;
-IFS=" "
-subj_string=( $foo )
-
-
-# Now should add the obligation?
-
-$PAP_ADMIN ap --resource resource_1 \
-             --action testwerfer \
-             --obligation \
-http://glite.org/xacml/obligation/local-environment-map permit subject="${subj_string[1]}"
-
 ###############################################################
-
-$PAP_ADMIN lp -srai
-echo $T_PDP_CTRL reloadpolicy
-$T_PDP_CTRL reloadpolicy
-echo $T_PEP_CTRL clearcache
-$T_PEP_CTRL clearcache
-
-###############################################################
-# -vx \
 
 $PEPCLI -p https://`hostname`:8154/authz \
        --capath /etc/grid-security/certificates/ \
@@ -81,7 +70,8 @@ then
     foo=`grep Group: $LOGSLOCATION/${script_name}.out`
     IFS=" "
     groups=( $foo )
-    if [ ! -z ${groups[1]} ]
+    prim_group=${groups[1]}
+    if [ ! -z ${prim_group} ]
     then
         sleep 0;
     else
@@ -91,7 +81,8 @@ then
     foo=`grep "Secondary Groups:" $LOGSLOCATION/${script_name}.out`
     IFS=" "
     groups=( $foo )
-    if [ ! -z ${groups[2]} ]
+    sec_group=${groups[2]}
+    if [ ! -z ${sec_group} -a ${sec_group} = ${prim_group} ]
     then
         sleep 0;
     else
@@ -103,6 +94,26 @@ else
 fi
 
 ###############################################################
+#
+# clean up...
+#
+# Make sure to return the files
+#
+# Copy the files:
+# /etc/grid-security/grid-mapfile
+# /etc/grid-security/groupmapfile
+# /etc/grid-security/voms-grid-mapfile
+
+source_dir="/tmp/"
+target_dir="/etc/grid-security"
+target_file="grid-mapfile"
+cp ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
+target_file="voms-grid-mapfile"
+cp ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
+target_file="groupmapfile"
+cp ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
+
+cp $SCRIPTBACKUPLOCATION/$T_PEP_INI $T_PEP_CONF/$T_PEP_INI
 
 if [ $failed == "yes" ]; then
   echo "---${script_name}: TEST FAILED---"

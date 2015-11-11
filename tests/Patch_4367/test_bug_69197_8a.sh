@@ -1,4 +1,5 @@
 #!/bin/bash
+failed="no"
 
 # Make sure all the needed Variables are present and all the Argus-components are up and running
 source $FRAMEWORK/set_homes.sh
@@ -49,6 +50,8 @@ if [ $result -eq 0 ]; then
             failed="yes"
 	    fi
     fi
+else
+    failed="yes"
 fi
 
 #
@@ -119,6 +122,8 @@ if [ $result -eq 0 ]; then
             let i=$i+1;
         done
     fi
+else
+    failed="yes"
 fi
 
 ###############################################################

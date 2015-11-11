@@ -1,4 +1,5 @@
 #!/bin/bash
+failed="no"
 
 # Make sure all the needed Variables are present and all the Argus-components are up and running
 source $FRAMEWORK/set_homes.sh
@@ -55,6 +56,8 @@ then
             failed="yes"
         fi
     fi
+else
+    failed="yes"
 fi
 #
 # OK. Now we gotta test with a proxy!
@@ -128,6 +131,8 @@ then
             let i=$i+1;
         done
     fi
+else
+    failed="yes"
 fi
 
 ###############################################################

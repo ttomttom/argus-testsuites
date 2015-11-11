@@ -98,6 +98,8 @@ then
         echo "${script_name}: No user secondary group mapped."
         failed="yes"
     fi
+else
+    failed="yes"
 fi
 
 ###############################################################

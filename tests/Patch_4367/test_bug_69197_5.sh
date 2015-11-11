@@ -108,7 +108,7 @@ then
         echo "${script_name}: Did not find expected rule: $RULE."
         failed="yes"
     else
-        WANTED_UID="glite"
+        WANTED_UID="${DN_UID}"
         grep_term="Username: "
         foo=`grep $grep_term /tmp/${script_name}.out`
         search_term=${foo#$grep_term};
@@ -122,7 +122,7 @@ then
         search_term=${foo#$grep_term};
         if [ "${search_term}" != "${VO}" ]
         then
-            echo "${script_name}: Did not find expected group: ${DN_UID_GROUP}."
+            echo "${script_name}: Did not find expected group: ${VO}."
             failed="yes"
         fi
 #

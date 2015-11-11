@@ -140,7 +140,7 @@ then
         # if [ "${search_term}" != "${DN_UID_GROUP}" ]
         if [ "${search_term}" != "${VO}" ]
          then
-            echo "${script_name}: Did not find expected group: ${DN_UID_GROUP}."
+            echo "${script_name}: Did not find expected group: ${VO}."
             failed="yes"
         fi
 #

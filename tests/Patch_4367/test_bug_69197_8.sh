@@ -119,7 +119,7 @@ then
         search_term=${foo#$grep_term};
         if [ "${search_term}" != "${VO}" ]
         then
-            echo "${script_name}: Did not find expected group: ${DN_UID_GROUP}."
+            echo "${script_name}: Did not find expected group: ${VO}."
             failed="yes"
         fi
 #

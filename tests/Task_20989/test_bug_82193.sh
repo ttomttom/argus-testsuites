@@ -28,7 +28,7 @@ if [ ! -f $USERPROXY ]; then
 	voms-proxy-init -voms "${VO}" \
 	-cert $USERCERT \
 	-key $USERKEY \
-	-pwstdin < ~/user_certificates/password
+	-pwstdin < "${USERPWD_FILE}"
 	voms-proxy-info -fqan
 fi
 

@@ -47,7 +47,9 @@ export Task21931="yes"
 # Test specific configurations
 export USERCERT=~/user_certificates/test_user_1_cert.pem
 export USERKEY=~/user_certificates/test_user_1_key.pem
-export USERPWD="`cat ~/user_certificates/password`"
+# in case of empty passphrase set this to /dev/null
+export USERPWD_FILE=~/user_certificates/password
+export USERPWD="`cat ${USERPWD_FILE}`"
 
 export VO="dteam"
 export VO_PRIMARY_GROUP="/dteam"

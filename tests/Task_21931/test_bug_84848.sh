@@ -63,7 +63,7 @@ echo ""
 cd $currentDir
 
 if [ $passed == "no" ]; then
-echo "---Test: implement memory limit: TEST FAILED---"
+echo "---Test: use VOMS Java API 2.0.6: TEST FAILED---"
 echo `date`
 exit 1
 else

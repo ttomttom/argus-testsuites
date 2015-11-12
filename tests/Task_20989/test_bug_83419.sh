@@ -7,139 +7,20 @@ passed="yes"
 source $FRAMEWORK/set_homes.sh
 source $FRAMEWORK/start_services.sh
 
-
-#########################################################
-# Prepare the environment (conf-files, e.t.c) for the TEST
-#
-
-if [ ! -d /etc/vomses ]; then
-	mkdir -p /etc/vomses
-	if [ ! -f /etc/vomses/${VO} ]; then
-		echo ${VOMSES_STRING} > /etc/vomses/${VO}
-	fi
-
-fi
-
-USERPROXY=/tmp/x509up_u0
-rm $USERPROXY
-
-if [ ! -f $USERPROXY ]; then
-	voms-proxy-init -voms "${VO}" \
-	-cert $USERCERT \
-	-key $USERKEY \
-	-pwstdin < "${USERPWD_FILE}"
-	voms-proxy-info -fqan
-fi
-
-
-
-# Copy the files:
-source_dir=/etc/grid-security
-target_file=grid-mapfile
-touch ${source_dir}/${target_file}
-
-target_file=groupmapfile
-touch ${source_dir}/${target_file}
-
-target_file_dir=gridmapdir
-mkdir -p ${target_dir}/${target_file_dir}
-
-# Now enter the userids etc
-# /etc/grid-security/grid-mapfile
-# “/${VO}” .${VO}
-# <DN> <user id>
-target_file=/etc/grid-security/grid-mapfile
-echo "\"${VO_PRIMARY_GROUP}\"" ".${VO}" > ${target_file}
-echo "\"${VO_PRIMARY_GROUP}/Role=NULL/Capability=NULL\"" ".${VO}" > ${target_file}
-echo ${target_file};cat ${target_file}
-
-target_file=/etc/grid-security/groupmapfile
-GROUP1="group"
-GROUP2="group2"
-echo "\"${VO_PRIMARY_GROUP}\"" $GROUP1 > ${target_file}
-echo "\"${VO_PRIMARY_GROUP}/Role=NULL/Capability=NULL\"" $GROUP1 > ${target_file}
-echo "\"${VO_SECONDARY_GROUP}/Role=NULL/Capability=NULL\"" $GROUP2 >> ${target_file}
-echo ${target_file};cat ${target_file}
-
-# make sure that there is a reference to the glite pool-accounts in the gridmapdir
-touch "/etc/grid-security/gridmapdir/${VO}001"
-touch "/etc/grid-security/gridmapdir/${VO}002"
-
-
 #########################################################
 
+export GRID_MAPFILE_VO_MAP="yes"
+export GRID_MAPFILE_DN_MAP="no"
+export GROUP_MAPFILE_VO_MAP="yes"
+export GROUP_MAPFILE_VO_SECONDARY_MAP="yes"
+export GROUP_MAPFILE_DN_MAP="no"
 
-#########################################################
-# Now probably let's start the services.
-function pep_start {
-	$T_PEP_CTRL status > /dev/null
-	if [ $? -ne 0 ]; then
-		echo "PEPd is not running. Starting one."
-  		$T_PEP_CTRL start
-  		sleep 10
-	else
-  		echo "${script_name}: Stopping PEPd."
-  		$T_PEP_CTRL stop > /dev/null
-  		sleep 5
-  		echo "${script_name}: Starting PEPd."
-  		$T_PEP_CTRL start > /dev/null
-  		sleep 15
-	fi
-}
-pep_start
+export PEPENV_preferDNForLoginName="preferDNForLoginName = true"
+export PEPENV_preferDNForPrimaryGroupName="preferDNForPrimaryGroupName = true"
+export PEPENV_noPrimaryGroupNameIsError="noPrimaryGroupNameIsError = true"
 
-function pdp_start {
-	$T_PDP_CTRL status > /dev/null
-	if [ $? -ne 0 ]; then
-		echo "PDP is not running. Starting one."
-		$T_PDP_CTRL start
-  		sleep 10
-	fi
-}
-pdp_start
-
-function pap_start {
-	$T_PAP_CTRL status | grep -q 'PAP running'
-	if [ $? -ne 0 ]; then
-  		echo "PAP is not running"
-  		$T_PAP_CTRL start;
-  		sleep 10;
-	fi 
-}
-pap_start
-#########################################################
-
-
-#########################################################
-# Get my cert DN for usage later
-#
-# Here’s the string format
-# subject= /C=CH/O=CERN/OU=GD/CN=Test user 1
-# so should match the first “subject= “ and keep the rest
-# of the string
-obligation_dn=`openssl x509 -in $USERCERT -subject -noout -nameopt RFC2253 | sed 's/subject= //'`
-echo subject string="$obligation_dn"
-#########################################################
-
-
-#########################################################
-# Now its time to define a policy and add it with pap-admin
-RESOURCE=test_resource
-ACTION=ANY
-RULE=permit
-OBLIGATION="http://glite.org/xacml/obligation/local-environment-map"
-
-$T_PAP_HOME/bin/pap-admin ap $RULE subject="${obligation_dn}" \
-			 --resource $RESOURCE \
-             --action $ACTION \
-             --obligation $OBLIGATION 
-             
-sleep 5;
-
-$T_PEP_CTRL clearcache
-$T_PDP_CTRL reloadpolicy #without this, the policy wouldn't be visible for ~5min.
-#########################################################
-
+# Set up the environment for the use of pepcli
+source $FRAMEWORK/pepcli-env.sh
 
 #########################################################
 # Now everything is set up and we can start the test
@@ -155,9 +36,20 @@ pepcli --pepd https://`hostname`:8154/authz \
        --cert $USERCERT \
        --resource $RESOURCE \
        --keypasswd "$USERPWD" \
-       --action $ACTION > /dev/null
+       --action $ACTION > /tmp/${script_name}.out
+result=$?
+
+echo "---------------------------------------"
+cat /tmp/${script_name}.out
+echo "---------------------------------------"
+
+if [ $result -ne 0 ]; then
+        echo "${script_name}: pepcli failed!"
+        passed="no"
+fi
+
        
-ls  /etc/grid-security/gridmapdir/ | grep $GROUP1
+ls  /etc/grid-security/gridmapdir/ | grep $GROUP
 
 if [ $? -ne 0 ]; then
 	passed="no";
@@ -165,7 +57,28 @@ fi
 
 echo "-------------------------------"
 #########################################################
+#
+# clean up...
+#
+# Make sure to return the files
+#
+# Copy the files:
+# /etc/grid-security/grid-mapfile
+# /etc/grid-security/groupmapfile
+# /etc/grid-security/voms-grid-mapfile
 
+source_dir="/tmp"
+target_dir="/etc/grid-security"
+target_file="grid-mapfile"
+mv ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
+target_file="voms-grid-mapfile"
+mv ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
+target_file="groupmapfile"
+mv ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
+
+cp $SCRIPTBACKUPLOCATION/$T_PEP_INI $T_PEP_CONF/$T_PEP_INI
+
+rm -f "${source_dir}/${script_name}.out"
 
 #########################################################
 # give out wether the test has been passed

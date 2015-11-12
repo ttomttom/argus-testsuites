@@ -102,15 +102,23 @@ echo ${target_file};cat ${target_file}
 
 target_file=/etc/grid-security/groupmapfile
 GROUP="${VO}"
+GROUP2="${VO}-secondary"
 DN_UID_GROUP="testing"
 echo -n "" > ${target_file}
 if [ "${GROUP_MAPFILE_VO_MAP}" = "yes" ]; then
 	echo "\"${VO_PRIMARY_GROUP}\"" ${GROUP} >> ${target_file}
 fi
+if [ "${GROUP_MAPFILE_VO_SECONDARY_MAP}" = "yes" ]; then
+        echo "\"${VO_SECONDARY_GROUP}\"" ${GROUP2} >> ${target_file}
+fi
 if [ "${GROUP_MAPFILE_DN_MAP}" = "yes" ]; then
 	echo "\"${obligation_dn}\"" ${DN_UID_GROUP} >> ${target_file}
 fi
 echo ${target_file};cat ${target_file}
+
+# make sure that there is a reference to the glite pool-accounts in the gridmapdir
+touch "/etc/grid-security/gridmapdir/${VO}001"
+touch "/etc/grid-security/gridmapdir/${VO}002"
 
 # Now sort out the pepd.ini file
 grep -q 'org.glite.authz.pep.obligation.dfpmap.DFPMObligationHandlerConfigurationParser' $T_PEP_CONF/$T_PEP_INI
@@ -180,15 +188,14 @@ if [ $? -ne 0 ]; then
 fi
 
 RESOURCE="resource_1"
-ACTION="do_not_test"
+ACTION="testwerfer"
 RULE="permit"
 OBLIGATION="http://glite.org/xacml/obligation/local-environment-map"
 
 # Now should add the obligation?
-$PAP_ADMIN ap --resource resource_1 \
-             --action testwerfer \
-             --obligation $OBLIGATION ${RULE} subject="${obligation_dn}"
-
+$PAP_ADMIN ap --resource "${RESOURCE}" \
+             --action "${ACTION}" \
+             --obligation "${OBLIGATION}" "${RULE}" subject="${obligation_dn}"
 
 ###############################################################
 

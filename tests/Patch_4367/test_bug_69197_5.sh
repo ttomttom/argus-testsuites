@@ -169,11 +169,13 @@ fi
 source_dir="/tmp/"
 target_dir="/etc/grid-security"
 target_file="grid-mapfile"
-cp ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
+mv ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
 target_file="voms-grid-mapfile"
-cp ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
+mv ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
 target_file="groupmapfile"
-cp ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
+mv ${source_dir}/${target_file}.${script_name} ${target_dir}/${target_file}
+
+rm -f "${source_dir}/${script_name}.out"
 
 cp $SCRIPTBACKUPLOCATION/$T_PEP_INI $T_PEP_CONF/$T_PEP_INI
 

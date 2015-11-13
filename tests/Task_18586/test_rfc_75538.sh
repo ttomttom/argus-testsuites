@@ -60,11 +60,20 @@ echo "---Test: PAP changes bind IP using localhost---"
 #########################################################
 
 echo "1) Testing if port 8150 is listen on hostname"
-netstat -T -l --numeric-ports | grep `hostname`:8150 | grep LISTEN
+
+NETSTAT_ARGS="-l --numeric-ports"
+NETTOOLS_VERSION=`rpm -qa | grep net-tools | cut -d '-' -f 3 | cut -d '.' -f 1`
+if [ ${NETTOOLS_VERSION} -le 1 ]; then
+	NETSTAT_ARGS="${NETSTAT_ARGS} -T"
+else
+	NETSTAT_ARGS="${NETSTAT_ARGS} -W"
+fi
+
+netstat ${NETSTAT_ARGS} | grep `hostname`:8150 | grep LISTEN
 if [ $? -eq 0 ]; then
 	echo "OK" 
 else
-        netstat -T -l --numeric-ports | grep `hostname -s`:8150 | grep LISTEN
+        netstat ${NETSTAT_ARGS} | grep `hostname -s`:8150 | grep LISTEN
         if [ $? -eq 0 ]; then
                 echo "OK" 
         else
@@ -75,7 +84,7 @@ fi
 echo "-------------------------------"
 
 echo "2) Testing if port 8151 is listen on localhost"
-netstat -T -l --numeric-ports | grep localhost | grep 8151 | grep LISTEN
+netstat ${NETSTAT_ARGS} | grep localhost | grep 8151 | grep LISTEN
 if [ $? -eq 0 ]; then
 	echo "OK" 
 else

@@ -84,7 +84,7 @@ fi
 
 # Now get the ID
 
-id=`$PAP_ADMIN lp -srai | grep 'id=[^public]' | sed 's/id=//'`
+id=`$PAP_ADMIN lp -srai | grep 'id=[^p][0-9a-f\-]*' | sed 's/id=//'`
 CMD="$PAP_ADMIN ro $id $OBLIGATION";
 echo $CMD
 $CMD
